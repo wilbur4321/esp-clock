@@ -63,7 +63,9 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Starting up!");
 
+#ifdef LED_BUILTIN
     pinMode(LED_BUILTIN, OUTPUT);
+#endif
 
     //pinMode(D3, OUTPUT);
     //digitalWrite(D3, LOW);
@@ -78,7 +80,9 @@ void setup() {
 void loop() {
     Serial.println("Setting digit 0 to 8");
     showDigit(0, 8, 0);
+#ifdef LED_BUILTIN
     digitalWrite(LED_BUILTIN, HIGH);
+#endif
     delay(10000);
 
     for (uint8_t segment = 0; segment < 7; segment++) {
@@ -96,13 +100,17 @@ void loop() {
         Serial.print("Setting digit 0 to ");
         Serial.println(num);
         showDigit(0, num, 0);
+#ifdef LED_BUILTIN
         digitalWrite(LED_BUILTIN, LOW);
+#endif
         delay(1000);
     }
 
     Serial.println("Setting digit 0 to NULL");
     showDigit(0, 10, 0);
+#ifdef LED_BUILTIN
     digitalWrite(LED_BUILTIN, HIGH);
+#endif
     delay(5000);
  }
 
@@ -121,7 +129,9 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Starting up!");
 
+#ifdef LED_BUILTIN
     pinMode(LED_BUILTIN, OUTPUT);
+#endif
 
     Wire.begin();
     checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
@@ -133,10 +143,14 @@ void setup() {
 
 void loop() {
     Serial.println("Hello world!");
+#ifdef LED_BUILTIN
     digitalWrite(LED_BUILTIN, LOW);
+#endif
     sServoArray[0]->startEaseTo(90);
     delay(1000);
+#ifdef LED_BUILTIN
     digitalWrite(LED_BUILTIN, HIGH);
+#endif
     sServoArray[0]->startEaseTo(0);
     delay(3000);
 }
