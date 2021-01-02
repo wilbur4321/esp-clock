@@ -32,7 +32,7 @@ const uint8_t digitToSegmentPositions [11][7] = { //for each number, position of
     {0,0,0,0,0,0,0}  // null (all down)
     };
 
-const uint16_t servoPulse [2] [2] {{440, 210},{210, 450}}; // pulse of servos at low positions and high position
+const uint16_t servoPulse [2] [2] {{400, 210},{210, 450}}; // pulse of servos at low positions and high position
 
 const uint8_t servoReverse [4] [7] = { // one identifies wservos that work reverse, zero is normal direction
     {0,0,1,0,1,0,0},
@@ -84,6 +84,7 @@ void setup() {
     servoDriver.begin();
     //servoDriver.setOscillatorFrequency(27000000);
     servoDriver.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+    showDigit(0, 8, 0);
 }
 
 #if 1
