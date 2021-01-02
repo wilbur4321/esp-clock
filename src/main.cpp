@@ -28,7 +28,7 @@ const uint8_t digitToSegmentPositions [11][7] = { //for each number, position of
     {1,1,0,1,1,1,1}, // six
     {1,0,1,0,0,1,0}, // seven
     {1,1,1,1,1,1,1}, // eight
-    {1,1,1,1,0,1,1},  // nine
+    {1,1,1,1,0,1,1}, // nine
     {0,0,0,0,0,0,0}  // null (all down)
     };
 
@@ -52,10 +52,21 @@ void showSegment(uint8_t index, uint8_t segment, uint8_t segmentPosition) {
 }
 
 void showDigit(uint8_t index, uint8_t digit, uint16_t segmentDelay) {
+    Serial.print("Setting digit ");
+    Serial.print(index);
+    Serial.print(" to ");
+    Serial.println(digit);
     for (uint8_t segment = 0; segment < 7; segment++) {
         uint8_t segmentPosition = digitToSegmentPositions[digit][segment];
         showSegment(index, segment, segmentPosition);
         delay(segmentDelay);
+    }
+}
+
+void doCount(uint8_t index, uint16_t segmentDelay) {
+    for (uint8_t digit = 0 ; digit < 10; digit++) {
+        showDigit(0, digit, 0);
+        delay(1000);
     }
 }
 
@@ -75,44 +86,52 @@ void setup() {
     servoDriver.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 }
 
-#if 0
+#if 1
 
+bool needToShowInstructions = true;
 void loop() {
-    Serial.println("Setting digit 0 to 8");
-    showDigit(0, 8, 0);
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, HIGH);
-#endif
-    delay(10000);
+    if (needToShowInstructions) {
+        Serial.println("Type a number, or F for off or R to count 0 to 9");
+        needToShowInstructions = false;
+    }
 
-    for (uint8_t segment = 0; segment < 7; segment++) {
-        Serial.print("Removing digit 0 segment ");
-        Serial.println('A' + segment);
-        showSegment(0, segment, 0);
-        delay(10000);
+    if (Serial.available() > 0) {
+        needToShowInstructions = true;
+        char input = Serial.read();
+        if (input == -1) {
+        }
+
+        if (input == 'R' || input == 'r') {
+            doCount(0, 0);
+        } else if (input == 'F' || input == 'f') {
+            showDigit(0, 10, 0);
+        } else if (input >= '0' && input <= '9') {
+            showDigit(0, input-'0', 0);
+        }
     }
 }
 
 #else
 
 void loop() {
-    for (uint8_t num = 0 ; num < 10; num++) {
-        Serial.print("Setting digit 0 to ");
-        Serial.println(num);
-        showDigit(0, num, 0);
-#ifdef LED_BUILTIN
-        digitalWrite(LED_BUILTIN, LOW);
-#endif
-        delay(1000);
-    }
-
-    Serial.println("Setting digit 0 to NULL");
-    showDigit(0, 10, 0);
+    Serial.println("Setting digit 0 to ON");
+    showDigit(0, 8, 0);
 #ifdef LED_BUILTIN
     digitalWrite(LED_BUILTIN, HIGH);
 #endif
     delay(5000);
- }
+
+#if 1
+    doCount(0, 0);
+
+    Serial.println("Setting digit 0 to NULL");
+    showDigit(0, 10, 0);
+#ifdef LED_BUILTIN
+    digitalWrite(LED_BUILTIN, LOW);
+#endif
+    delay(1000);
+#endif
+}
 
 #endif
 
