@@ -70,72 +70,6 @@ void doCount(uint8_t index, uint16_t segmentDelay) {
     }
 }
 
-void setup() {
-    Serial.begin(9600);
-    Serial.println("Starting up!");
-
-#ifdef LED_BUILTIN
-    pinMode(LED_BUILTIN, OUTPUT);
-#endif
-
-    //pinMode(D3, OUTPUT);
-    //digitalWrite(D3, LOW);
-
-    servoDriver.begin();
-    //servoDriver.setOscillatorFrequency(27000000);
-    servoDriver.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
-    showDigit(0, 8, 0);
-}
-
-#if 1
-
-bool needToShowInstructions = true;
-void loop() {
-    if (needToShowInstructions) {
-        Serial.println("Type a number, or F for off or R to count 0 to 9");
-        needToShowInstructions = false;
-    }
-
-    if (Serial.available() > 0) {
-        needToShowInstructions = true;
-        char input = Serial.read();
-        if (input == -1) {
-        }
-
-        if (input == 'R' || input == 'r') {
-            doCount(0, 0);
-        } else if (input == 'F' || input == 'f') {
-            showDigit(0, 10, 0);
-        } else if (input >= '0' && input <= '9') {
-            showDigit(0, input-'0', 0);
-        }
-    }
-}
-
-#else
-
-void loop() {
-    Serial.println("Setting digit 0 to ON");
-    showDigit(0, 8, 0);
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, HIGH);
-#endif
-    delay(5000);
-
-#if 1
-    doCount(0, 0);
-
-    Serial.println("Setting digit 0 to NULL");
-    showDigit(0, 10, 0);
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, LOW);
-#endif
-    delay(1000);
-#endif
-}
-
-#endif
-
 #if 0
 
 #include <ServoEasing.h>
@@ -231,3 +165,43 @@ void getAndAttachServosToPCA9685Expander(uint8_t aPCA9685I2CAddress, uint8_t nNu
 }
 
 #endif
+
+void setup() {
+    Serial.begin(9600);
+    Serial.println("Starting up!");
+
+#ifdef LED_BUILTIN
+    pinMode(LED_BUILTIN, OUTPUT);
+#endif
+
+    //pinMode(D3, OUTPUT);
+    //digitalWrite(D3, LOW);
+
+    servoDriver.begin();
+    //servoDriver.setOscillatorFrequency(27000000);
+    servoDriver.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+    showDigit(0, 8, 0);
+}
+
+bool needToShowInstructions = true;
+void loop() {
+    if (needToShowInstructions) {
+        Serial.println("Type a number, or F for off or R to count 0 to 9");
+        needToShowInstructions = false;
+    }
+
+    if (Serial.available() > 0) {
+        needToShowInstructions = true;
+        char input = Serial.read();
+        if (input == -1) {
+        }
+
+        if (input == 'R' || input == 'r') {
+            doCount(0, 0);
+        } else if (input == 'F' || input == 'f') {
+            showDigit(0, 10, 0);
+        } else if (input >= '0' && input <= '9') {
+            showDigit(0, input-'0', 0);
+        }
+    }
+}
