@@ -1,12 +1,27 @@
 #include <Arduino.h>
-
 #include <Wire.h>
+
+#define USE_SERVO_EASING
+#define SERVO_COUNT 7
+
+#ifdef USE_SERVO_EASING
+
+#include <ServoEasing.h>
+
+#define FIRST_PCA9685_EXPANDER_ADDRESS 0x40
+
+bool checkI2CConnection(uint8_t aI2CAddress);
+void getAndAttachServosToPCA9685Expander(uint8_t aPCA9685I2CAddress, uint8_t nNumServos);
+
+#else
 
 #include <Adafruit_PWMServoDriver.h>
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 // you can also call it with a different address you want
 //Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver(0x41);
+
+#endif
 
 // Depending on your servo make, the pulse width min and max may vary, you
 // want these to be as small/large as possible without hitting the hard stop
@@ -44,18 +59,20 @@ const uint8_t servoReverse [4] [7] = { // one identifies wservos that work rever
 
 void showSegment(uint8_t index, uint8_t segment, uint8_t segmentPosition) {
     uint8_t servoNum = index*8 + segment;
+    // temporary code to limit number of servos for testing
+    if (servoNum >= SERVO_COUNT) { return; }
     uint16_t pulse = servoPulse[servoReverse[index][segment]][segmentPosition];
     // TODO: finetune?
 
     // TODO: handle second controller? Won't need if we use easing library instead!
+#ifdef USE_SERVO_EASING
+    sServoArray[servoNum]->startEaseTo(sServoArray[servoNum]->MicrosecondsOrUnitsToDegree(pulse));
+#else
     servoDriver.setPWM(servoNum, 0, pulse);
+#endif
 }
 
 void showDigit(uint8_t index, uint8_t digit, uint16_t segmentDelay) {
-    Serial.print("Setting digit ");
-    Serial.print(index);
-    Serial.print(" to ");
-    Serial.println(digit);
     for (uint8_t segment = 0; segment < 7; segment++) {
         uint8_t segmentPosition = digitToSegmentPositions[digit][segment];
         showSegment(index, segment, segmentPosition);
@@ -70,44 +87,7 @@ void doCount(uint8_t index, uint16_t segmentDelay) {
     }
 }
 
-#if 0
-
-#include <ServoEasing.h>
-
-#define FIRST_PCA9685_EXPANDER_ADDRESS 0x40
-
-bool checkI2CConnection(uint8_t aI2CAddress);
-void getAndAttachServosToPCA9685Expander(uint8_t aPCA9685I2CAddress, uint8_t nNumServos);
-
-void setup() {
-    Serial.begin(9600);
-    Serial.println("Starting up!");
-
-#ifdef LED_BUILTIN
-    pinMode(LED_BUILTIN, OUTPUT);
-#endif
-
-    Wire.begin();
-    checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
-    getAndAttachServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS, 1);
-
-    writeAllServos(0);
-    setSpeedForAllServos(20);
-}
-
-void loop() {
-    Serial.println("Hello world!");
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, LOW);
-#endif
-    sServoArray[0]->startEaseTo(90);
-    delay(1000);
-#ifdef LED_BUILTIN
-    digitalWrite(LED_BUILTIN, HIGH);
-#endif
-    sServoArray[0]->startEaseTo(0);
-    delay(3000);
-}
+#ifdef USE_SERVO_EASING
 
 /*
  * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
@@ -174,13 +154,21 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
-    //pinMode(D3, OUTPUT);
-    //digitalWrite(D3, LOW);
+#ifdef USE_SERVO_EASING
+    Wire.begin();
+    checkI2CConnection(FIRST_PCA9685_EXPANDER_ADDRESS);
+    getAndAttachServosToPCA9685Expander(FIRST_PCA9685_EXPANDER_ADDRESS, SERVO_COUNT);
 
+    setSpeedForAllServos(90/1);
+    writeAllServos(sServoArray[0]->MicrosecondsOrUnitsToDegree(servoPulse[0][0]));
+    showDigit(0, 8, 0);
+#else
     servoDriver.begin();
     //servoDriver.setOscillatorFrequency(27000000);
     servoDriver.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+
     showDigit(0, 8, 0);
+#endif
 }
 
 bool needToShowInstructions = true;
