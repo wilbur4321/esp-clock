@@ -6,7 +6,7 @@
 
 #ifdef USE_SERVO_EASING
 
-#include <ServoEasing.h>
+#include <ServoEasing.hpp>
 
 #define FIRST_PCA9685_EXPANDER_ADDRESS 0x40
 
